@@ -74,15 +74,24 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='cancel')
     def cancel(self, request, pk=None):
         invoice = self.get_object()
-        # Example: check if not already canceled
         if invoice.status == 'canceled':
             return Response({'detail': 'Invoice is already canceled.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Update the invoice status
         invoice.status = 'canceled'
         invoice.save()
-
         return Response({'detail': f'Invoice {invoice.invoice_no} canceled successfully.'})
+
+    @action(detail=True, methods=['post'], url_path='approve')
+    def approve(self, request, pk=None):
+        invoice = self.get_object()
+        if invoice.status == 'approved':
+            return Response({'detail': 'Invoice is already approved.'}, status=status.HTTP_400_BAD_REQUEST)
+        if invoice.status != 'issued':
+            return Response({'detail': 'Only issued invoices can be approved.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        invoice.status = 'approved'
+        invoice.save()
+        return Response({'detail': f'Invoice {invoice.invoice_no} approved successfully.'})
 
 
 class BillViewSet(viewsets.ModelViewSet):
